@@ -1,0 +1,61 @@
+class YCL_UTIL_SELECTION_SCREEN definition
+  public
+  create public .
+
+public section.
+
+  class-methods GET_VARIANT_SALV
+    importing
+      !IV_REPID type SY-REPID
+    returning
+      value(RV_VAR) type SLIS_VARI .
+protected section.
+private section.
+ENDCLASS.
+
+
+
+CLASS YCL_UTIL_SELECTION_SCREEN IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method YCL_UTIL_SELECTION_SCREEN=>GET_VARIANT_SALV
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] IV_REPID                       TYPE        SY-REPID
+* | [<-()] RV_VAR                         TYPE        SLIS_VARI
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD get_variant_salv.
+
+    DATA: ls_disvariant TYPE disvariant.
+    DATA: lv_exit       TYPE char1.
+
+    ls_disvariant-report = iv_repid.
+
+    CALL FUNCTION 'REUSE_ALV_VARIANT_F4'
+      EXPORTING
+        is_variant    = ls_disvariant
+        i_save        = 'A'
+      IMPORTING
+        e_exit        = lv_exit
+        es_variant    = ls_disvariant
+      EXCEPTIONS
+        not_found     = 1
+        program_error = 2
+        OTHERS        = 3.
+
+    CASE sy-subrc.
+      WHEN '2'.
+
+        MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno
+                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+
+      WHEN OTHERS.
+
+        IF lv_exit EQ space.
+          rv_var = ls_disvariant-variant.
+        ENDIF.
+
+    ENDCASE.
+
+  ENDMETHOD.
+ENDCLASS.
